@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Titans Ultra Boss Rush Script — Auto-Farm, Godmode & One-Tap Nuke</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-0: #070b1a;
+    --bg-1: #0d1330;
+    --bg-2: #161a3d;
+    --ink: #e8ecff;
+    --muted: #9aa3c7;
+    --accent: #6d8bff;
+    --accent-2: #a06bff;
+    --accent-3: #35e0c8;
+    --card: rgba(24, 30, 61, 0.66);
+    --border: rgba(122, 140, 255, 0.18);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+    background:
+      radial-gradient(1200px 700px at 15% -10%, rgba(109, 139, 255, 0.20), transparent 60%),
+      radial-gradient(1000px 600px at 90% 5%, rgba(160, 107, 255, 0.16), transparent 62%),
+      radial-gradient(900px 700px at 50% 110%, rgba(53, 224, 200, 0.10), transparent 60%),
+      linear-gradient(180deg, #070b1a 0%, #0b1029 40%, #101538 72%, #070b1a 100%);
+    color: var(--ink);
+    min-height: 100vh;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  .wrap { width: 100%; max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- NAV ---------- */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    background: rgba(9, 13, 32, 0.62);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    height: 68px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-size: 1.05rem;
+  }
+  .brand-mark {
+    width: 30px; height: 30px;
+    display: grid; place-items: center;
+    border-radius: 9px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    box-shadow: 0 0 18px rgba(109, 139, 255, 0.55);
+    font-size: 0.95rem;
+  }
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    list-style: none;
+    font-size: 0.92rem;
+    color: var(--muted);
+  }
+  .nav-links a { transition: color .2s ease; }
+  .nav-links a:hover { color: var(--ink); }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.93rem;
+    padding: 12px 22px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: transform .18s ease, box-shadow .18s ease, background .2s ease, border-color .2s ease;
+    white-space: nowrap;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #6d8bff 0%, #a06bff 100%);
+    color: #fff;
+    box-shadow: 0 10px 26px -10px rgba(109, 139, 255, 0.9);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 16px 34px -12px rgba(140, 120, 255, 1); }
+  .btn-ghost {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(150, 165, 255, 0.30);
+    color: var(--ink);
+  }
+  .btn-ghost:hover { background: rgba(255,255,255,0.09); transform: translateY(-2px); }
+  .btn-sm { padding: 10px 18px; font-size: 0.86rem; }
+
+  /* ---------- HERO ---------- */
+  .hero { padding: 84px 0 64px; text-align: center; position: relative; }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 16px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #c3ccff;
+    background: rgba(109, 139, 255, 0.10);
+    border: 1px solid rgba(122, 140, 255, 0.32);
+    box-shadow: inset 0 0 22px rgba(109, 139, 255, 0.12);
+  }
+  .pill .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent-3);
+    box-shadow: 0 0 10px var(--accent-3);
+  }
+  h1 {
+    margin: 26px auto 0;
+    max-width: 880px;
+    font-size: clamp(2.1rem, 5.6vw, 3.7rem);
+    line-height: 1.1;
+    letter-spacing: -0.035em;
+    font-weight: 800;
+    background: linear-gradient(100deg, #ffffff 5%, #a9b8ff 42%, #c39bff 68%, #6fe6d6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .hero p.sub {
+    margin: 22px auto 0;
+    max-width: 640px;
+    color: var(--muted);
+    font-size: 1.03rem;
+  }
+  .hero-cta {
+    margin-top: 34px;
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .hero-cta .btn { padding: 14px 28px; font-size: 0.98rem; }
+
+  .stats {
+    margin-top: 52px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    max-width: 880px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .stat {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 12px;
+    backdrop-filter: blur(8px);
+  }
+  .stat b { display: block; font-size: 1.06rem; letter-spacing: -0.01em; }
+  .stat span { font-size: 0.74rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.09em; }
+
+  /* ---------- SECTION HEADINGS ---------- */
+  section { padding: 72px 0; }
+  .sec-head { text-align: center; max-width: 620px; margin: 0 auto 46px; }
+  .sec-head h2 {
+    font-size: clamp(1.6rem, 3.4vw, 2.3rem);
+    letter-spacing: -0.03em;
+    font-weight: 800;
+  }
+  .sec-head p { color: var(--muted); margin-top: 12px; font-size: 0.98rem; }
+
+  /* ---------- FEATURES ---------- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  .card {
+    position: relative;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 26px 22px 24px;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+  }
+  .card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+    opacity: 0.85;
+  }
+  .card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(150, 165, 255, 0.42);
+    box-shadow: 0 22px 44px -22px rgba(80, 100, 255, 0.75);
+  }
+  .card .ico {
+    width: 46px; height: 46px;
+    display: grid; place-items: center;
+    font-size: 1.35rem;
+    border-radius: 12px;
+    background: rgba(109, 139, 255, 0.12);
+    border: 1px solid rgba(122, 140, 255, 0.24);
+    margin-bottom: 16px;
+  }
+  .card h3 { font-size: 1.03rem; letter-spacing: -0.01em; margin-bottom: 8px; }
+  .card p { color: var(--muted); font-size: 0.9rem; }
+
+  /* ---------- HOW IT WORKS ---------- */
+  .steps { position: relative; max-width: 720px; margin: 0 auto; }
+  .steps::before {
+    content: "";
+    position: absolute;
+    left: 23px;
+    top: 12px;
+    bottom: 12px;
+    width: 2px;
+    background: linear-gradient(180deg, var(--accent), var(--accent-2), rgba(53, 224, 200, 0.15));
+    border-radius: 2px;
+  }
+  .step {
+    position: relative;
+    display: flex;
+    gap: 22px;
+    padding: 0 0 34px 0;
+  }
+  .step:last-child { padding-bottom: 0; }
+  .step-num {
+    flex: 0 0 48px;
+    width: 48px; height: 48px;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    font-weight: 800;
+    font-size: 1rem;
+    color: #fff;
+    background: linear-gradient(135deg, #6d8bff, #a06bff);
+    box-shadow: 0 0 0 6px rgba(10, 15, 38, 1), 0 0 26px rgba(109, 139, 255, 0.55);
+    z-index: 1;
+  }
+  .step-body { padding-top: 4px; }
+  .step-body h3 { font-size: 1.04rem; margin-bottom: 6px; }
+  .step-body p { color: var(--muted); font-size: 0.92rem; }
+
+  /* ---------- FAQ ---------- */
+  .faq { max-width: 780px; margin: 0 auto; display: grid; gap: 12px; }
+  details {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    transition: border-color .2s ease, background .2s ease;
+  }
+  details[open] { border-color: rgba(150, 165, 255, 0.42); background: rgba(30, 37, 74, 0.78); }
+  summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 18px 54px 18px 22px;
+    font-weight: 600;
+    font-size: 0.96rem;
+    position: relative;
+    user-select: none;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::after {
+    content: "+";
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 26px; height: 26px;
+    display: grid; place-items: center;
+    font-size: 1.25rem;
+    font-weight: 400;
+    line-height: 1;
+    color: #c3ccff;
+    border-radius: 8px;
+    background: rgba(109, 139, 255, 0.12);
+    border: 1px solid rgba(122, 140, 255, 0.26);
+    transition: transform .25s ease, color .25s ease;
+  }
+  details[open] summary::after {
+    content: "×";
+    transform: translateY(-50%) rotate(180deg);
+    color: #a06bff;
+  }
+  .faq-a { padding: 0 22px 20px; color: var(--muted); font-size: 0.9rem; }
+
+  /* ---------- CTA BANNER ---------- */
+  .cta-banner {
+    position: relative;
+    overflow: hidden;
+    border-radius: 22px;
+    border: 1px solid rgba(140, 155, 255, 0.30);
+    background: linear-gradient(135deg, rgba(30, 38, 82, 0.92), rgba(18, 22, 52, 0.92));
+    padding: 58px 32px;
+    text-align: center;
+  }
+  .cta-banner::before {
+    content: "";
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 720px; height: 720px;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(109, 139, 255, 0.42) 0%, rgba(160, 107, 255, 0.20) 38%, transparent 68%);
+    pointer-events: none;
+  }
+  .cta-banner > * { position: relative; z-index: 1; }
+  .cta-banner h2 {
+    font-size: clamp(1.55rem, 3.6vw, 2.35rem);
+    letter-spacing: -0.03em;
+    font-weight: 800;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .cta-banner p { color: var(--muted); margin: 14px auto 30px; max-width: 520px; font-size: 0.96rem; }
+
+  /* ---------- FOOTER ---------- */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 30px 0;
+    margin-top: 20px;
+  }
+  .foot-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .foot-inner a:hover { color: var(--ink); }
+  .foot-links { display: flex; gap: 20px; }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 640px) {
+    .nav-links { display: none; }
+    .nav-inner { height: 62px; }
+    .hero { padding: 56px 0 44px; }
+    .grid { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: 1fr; }
+    .hero-cta .btn { width: 100%; }
+    section { padding: 52px 0; }
+    .cta-banner { padding: 44px 20px; }
+    .steps::before { left: 21px; }
+    .step-num { flex: 0 0 44px; width: 44px; height: 44px; font-size: 0.92rem; }
+    .foot-inner { flex-direction: column; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#top">
+      <span class="brand-mark">⚡</span>
+      Titans Boss Rush
+    </a>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <a class="btn btn-primary btn-sm" href="https://gitscore.cc">Download</a>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap">
+      <span class="pill"><span class="dot"></span>Titans ultra boss rush Script</span>
+      <h1>Clear Every Titan Boss Rush in Minutes, Not Hours</h1>
+      <p class="sub">
+        A lightweight Windows script for Titans ultra boss rush — auto-farm bosses, godmode,
+        damage multiplier, instant respawn, ESP boss tracker and a one-tap nuke loadout for
+        lightning-fast clears.
+      </p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="https://gitscore.cc">⬇ Download for Windows</a>
+        <a class="btn btn-ghost" href="https://gitscore.cc">View on GitHub</a>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><b>48,200+</b><span>Downloads</span></div>
+        <div class="stat"><b>v3.4.1</b><span>Version</span></div>
+        <div class="stat"><b>Windows 10 / 11</b><span>Platform</span></div>
+        <div class="stat"><b>Free &amp; open source</b><span>License</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Everything you need to farm bosses faster</h2>
+        <p>Built for Titans ultra boss rush — each module is toggleable, so you only run what you need.</p>
+      </div>
+
+      <div class="grid">
+        <article class="card">
+          <div class="ico">🤖</div>
+          <h3>Auto-Farm Bosses</h3>
+          <p>Automatically re-queues and fights boss encounters in the rush loop, so loot and clears stack up while you're away from the keyboard.</p>
+        </article>
+        <article class="card">
+          <div class="ico">🛡️</div>
+          <h3>Godmode</h3>
+          <p>Ignore incoming boss damage and phase mechanics. Perfect for learning attack patterns or pushing through the toughest ultra-tier fights.</p>
+        </article>
+        <article class="card">
+          <div class="ico">💥</div>
+          <h3>Damage Multiplier</h3>
+          <p>Adjustable output scaling lets you shred titan health bars in seconds. Dial it up for speed clears or down for a semi-legit feel.</p>
+        </article>
+        <article class="card">
+          <div class="ico">⏱️</div>
+          <h3>Instant Respawn</h3>
+          <p>Skip the death timer and re-enter the boss rush immediately. Keeps your farm loop running with zero downtime between attempts.</p>
+        </article>
+        <article class="card">
+          <div class="ico">📡</div>
+          <h3>ESP Boss Tracker</h3>
+          <p>Highlights every titan in the rush with distance markers and outlines, so you never waste time hunting for the next encounter.</p>
+        </article>
+        <article class="card">
+          <div class="ico">☢️</div>
+          <h3>One-Tap Nuke Loadout</h3>
+          <p>Instantly equips your best burst combo and fires it with a single hotkey — the fastest way to delete a boss phase on demand.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>How it works</h2>
+        <p>Three steps from download to your first sub-minute boss rush clear.</p>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h3>Download &amp; extract</h3>
+            <p>Grab the latest build from gitscore.cc, extract the archive to any folder, and keep the loader and config files together.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h3>Launch and toggle modules</h3>
+            <p>Run the loader as administrator, then enable auto-farm, godmode, damage multiplier, ESP tracker or the nuke loadout from the overlay.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h3>Enter the boss rush and clear</h3>
+            <p>Start a Titans ultra boss rush and let the script handle targeting, respawns and burst damage while you collect the rewards.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Frequently asked questions</h2>
+        <p>Quick answers about the Titans ultra boss rush script.</p>
+      </div>
+
+      <div class="faq">
+        <details>
+          <summary>Is the Titans ultra boss rush script free?</summary>
+          <div class="faq-a">Yes. The project is free and open source — grab the latest build from gitscore.cc and check the repository for updates and changelogs.</div>
+        </details>
+        <details>
+          <summary>Which Windows versions are supported?</summary>
+          <div class="faq-a">The script targets Windows 10 and Windows 11 (64-bit). Run the loader as administrator so the overlay and hotkeys attach correctly.</div>
+        </details>
+        <details>
+          <summary>Can I use only some features, like ESP or godmode?</summary>
+          <div class="faq-a">Absolutely. Every module — auto-farm, godmode, damage multiplier, instant respawn, ESP boss tracker and the nuke loadout — toggles independently from the overlay.</div>
+        </details>
+        <details>
+          <summary>How do I update to the newest version?</summary>
+          <div class="faq-a">Download the newest release from gitscore.cc, replace your existing files, and relaunch the loader. Your saved config and hotkeys stay intact.</div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA BANNER -->
+  <section style="padding-top: 0;">
+    <div class="wrap">
+      <div class="cta-banner">
+        <h2>Ready to speedrun the Titans boss rush?</h2>
+        <p>Download the script, toggle your modules, and start clearing ultra bosses with auto-farm and one-tap nukes.</p>
+        <a class="btn btn-primary" href="https://gitscore.cc">⬇ Download Titans Boss Rush Script</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap foot-inner">
+    <span>© 2025 Titans Boss Rush Script. All rights reserved.</span>
+    <div class="foot-links">
+      <a href="https://gitscore.cc">GitHub</a>
+      <a href="https://gitscore.cc">Download</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
